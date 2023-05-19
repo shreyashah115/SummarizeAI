@@ -1,0 +1,26 @@
+{
+  "name": "SummarizeAI",
+  "version": "1.0.0",
+  "manifest_version": 3,
+  "permissions": ["activeTab", "tabs", "storage"],
+  "icons": {
+    "16": "assets/icon.png",
+    "48": "assets/icon.png",
+    "128": "assets/icon.png"
+  },
+  "action": {
+    "default_popup": "js/index.html",
+    "default_title": "SummarizeAI"
+  },
+  "background": { "service_worker": "js/serviceworker.js" },
+  "content_scripts": [
+    {
+      "js": ["js/contentscript.js"],
+      "matches": ["<all_urls>"]
+    }
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self';",
+    "sandbox": "sandbox allow-scripts allow-forms allow-popups allow-modals; script-src 'self' 'unsafe-inline' 'unsafe-eval'; child-src 'self';"
+  }
+}
