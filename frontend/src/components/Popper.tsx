@@ -1,12 +1,17 @@
 import React, { useState, useRef, useEffect } from "react";
 import { PopperContainer } from "./Popper.styles";
 
-interface PopperProps {
+type PopperProps = {
   id: string;
   anchorEl: DOMRect | null;
   offset?: number;
   children: React.ReactNode;
-}
+};
+
+type PopperPosition = {
+  popperTop: number;
+  popperLeft: number;
+};
 
 export const Popper: React.FC<PopperProps> = ({
   id,
@@ -14,7 +19,7 @@ export const Popper: React.FC<PopperProps> = ({
   offset = 0,
   children,
 }) => {
-  const [popperPosition, setPopperPosition] = useState({
+  const [popperPosition, setPopperPosition] = useState<PopperPosition>({
     popperTop: 0,
     popperLeft: 0,
   });

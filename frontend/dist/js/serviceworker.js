@@ -1,1 +1,0 @@
-!function(){"use strict";chrome.runtime.onMessage.addListener((function(e,t,n){e.selectedText&&e.isExtensionEnabled&&chrome.contextMenus.create({id:"Highlights",title:"Add to Highlights",type:"normal",contexts:["all"]})}))}();

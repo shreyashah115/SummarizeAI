@@ -6,15 +6,8 @@ import { HighlightProvider } from "./HighlightContext";
 export const ContentScript = () => {
   const [selectedText, setSelectedText] = useState("");
   const [anchorEl, setAnchorEl] = useState<DOMRect | null>(null);
-  const [isPopperOpen, setIsPopperOpen] = useState(false);
-  const [isEnabled, setIsEnabled] = useState(false);
-
-  chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    if (message) {
-      const enabled = message.isExtensionEnabled;
-      setIsEnabled(enabled);
-    }
-  });
+  const [isPopperOpen, setIsPopperOpen] = useState<boolean>(false);
+  const [isEnabled, setIsEnabled] = useState<boolean>(false);
 
   useEffect(() => {
     const handleMouseUp = () => {
@@ -34,7 +27,6 @@ export const ContentScript = () => {
         clonedRange.surroundContents(span);
         selection.removeAllRanges();
         selection.addRange(clonedRange);
-
         setSelectedText(selectedText);
         setAnchorEl(rect);
       } else {
@@ -69,6 +61,13 @@ export const ContentScript = () => {
       window.removeEventListener("click", handleClick);
     };
   }, []);
+
+  chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message && message.isExtensionEnabled !== undefined) {
+      const enabled = message.isExtensionEnabled;
+      setIsEnabled(enabled);
+    }
+  });
 
   return (
     <React.StrictMode>

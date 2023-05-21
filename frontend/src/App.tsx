@@ -8,7 +8,11 @@ import {
   HighlightItem,
 } from "./App.styles";
 
-export const App = () => {
+type Message = {
+  isExtensionEnabled: boolean;
+};
+
+const App: React.FC = () => {
   const [isExtensionEnabled, setIsExtensionEnabled] = useState(false);
   const [highlights, setHighlights] = useState<Highlight[]>([]);
 
@@ -19,11 +23,14 @@ export const App = () => {
     });
   }, []);
 
-  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-    chrome.tabs.sendMessage(tabs[0].id as number, {
-      isExtensionEnabled: isExtensionEnabled,
+  useEffect(() => {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      const message: Message = {
+        isExtensionEnabled: isExtensionEnabled,
+      };
+      chrome.tabs.sendMessage(tabs[0].id as number, message);
     });
-  });
+  }, [isExtensionEnabled]);
 
   useEffect(() => {
     const fetchHighlights = async () => {
@@ -44,13 +51,11 @@ export const App = () => {
   }, []);
 
   const handleToggle = () => {
-    chrome.storage.local.set(
-      { isExtensionEnabled: !isExtensionEnabled },
-      () => {
-        console.log("Extension value stored in local storage");
-      }
-    );
-    setIsExtensionEnabled(!isExtensionEnabled);
+    const newValue = !isExtensionEnabled;
+    chrome.storage.local.set({ isExtensionEnabled: newValue }, () => {
+      console.log("Extension value stored in local storage");
+    });
+    setIsExtensionEnabled(newValue);
   };
 
   return (

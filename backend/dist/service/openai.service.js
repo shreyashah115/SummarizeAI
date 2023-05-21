@@ -16,7 +16,7 @@ let OpenAIService = class OpenAIService {
     constructor() {
         const configuration = new openai_1.Configuration({
             apiKey: process.env.OPENAI_API_KEY,
-            organization: 'org-bMVavWesECszZdZqT6UUEmpL',
+            organization: process.env.OPENAI_ORG_KEY,
         });
         this.openAI = new openai_1.OpenAIApi(configuration);
     }
