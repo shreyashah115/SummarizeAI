@@ -19,6 +19,12 @@ export const App = () => {
     });
   }, []);
 
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    chrome.tabs.sendMessage(tabs[0].id as number, {
+      isExtensionEnabled: isExtensionEnabled,
+    });
+  });
+
   useEffect(() => {
     const fetchHighlights = async () => {
       try {
@@ -44,7 +50,6 @@ export const App = () => {
         console.log("Extension value stored in local storage");
       }
     );
-
     setIsExtensionEnabled(!isExtensionEnabled);
   };
 

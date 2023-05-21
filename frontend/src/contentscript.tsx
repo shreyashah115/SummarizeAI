@@ -6,34 +6,49 @@ import { HighlightProvider } from "./HighlightContext";
 export const ContentScript = () => {
   const [selectedText, setSelectedText] = useState("");
   const [anchorEl, setAnchorEl] = useState<DOMRect | null>(null);
-  const [isExtensionEnabled, setIsExtensionEnabled] = useState(false);
   const [isPopperOpen, setIsPopperOpen] = useState(false);
+  const [isEnabled, setIsEnabled] = useState(false);
 
-  const handleMouseUp = () => {
-    const selection = window.getSelection();
-    const selectedText = selection?.toString().trim();
-    if (selectedText && selection) {
-      const range = selection.getRangeAt(0);
-      const rect = range.getBoundingClientRect();
-      const span = document.createElement("span");
-      span.style.color = "black";
-      span.style.backgroundColor = "orange";
-      span.style.cursor = "pointer";
-      span.classList.add("highlighted");
-
-      const clonedRange = range.cloneRange();
-      clonedRange.surroundContents(span);
-      selection.removeAllRanges();
-      selection.addRange(clonedRange);
-
-      setSelectedText(selectedText);
-      setAnchorEl(rect);
-      sendMessage(selectedText, rect);
-    } else {
-      setSelectedText("");
-      setAnchorEl(null);
+  chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message) {
+      const enabled = message.isExtensionEnabled;
+      setIsEnabled(enabled);
     }
-  };
+  });
+
+  useEffect(() => {
+    const handleMouseUp = () => {
+      const selection = window.getSelection();
+      const selectedText = selection?.toString().trim();
+
+      if (selectedText && selection && isEnabled) {
+        const range = selection.getRangeAt(0);
+        const rect = range.getBoundingClientRect();
+        const span = document.createElement("span");
+        span.style.color = "black";
+        span.style.backgroundColor = "orange";
+        span.style.cursor = "pointer";
+        span.classList.add("highlighted");
+
+        const clonedRange = range.cloneRange();
+        clonedRange.surroundContents(span);
+        selection.removeAllRanges();
+        selection.addRange(clonedRange);
+
+        setSelectedText(selectedText);
+        setAnchorEl(rect);
+      } else {
+        setSelectedText("");
+        setAnchorEl(null);
+      }
+    };
+
+    document.addEventListener("mouseup", handleMouseUp);
+
+    return () => {
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [isEnabled, anchorEl]);
 
   const handleClick = (event: MouseEvent) => {
     if (
@@ -47,45 +62,13 @@ export const ContentScript = () => {
     }
   };
 
-  const sendMessage = (selectedText: string, anchorEl: DOMRect | null) => {
-    chrome.runtime.sendMessage({
-      selectedText,
-      anchorEl,
-      isExtensionEnabled,
-    });
-  };
-
-  const handleStorageChange = (
-    changes: { [key: string]: chrome.storage.StorageChange },
-    areaName: string
-  ) => {
-    if (areaName === "local" && changes.isExtensionEnabled) {
-      const newData = changes.isExtensionEnabled.newValue;
-      setIsExtensionEnabled(newData);
-    }
-  };
-
   useEffect(() => {
-    document.addEventListener("mouseup", handleMouseUp);
     window.addEventListener("click", handleClick);
-    chrome.storage.onChanged.addListener(handleStorageChange);
-
-    chrome.storage.local.get("isExtensionEnabled", ({ isExtensionEnabled }) => {
-      setIsExtensionEnabled(isExtensionEnabled);
-    });
 
     return () => {
-      document.removeEventListener("mouseup", handleMouseUp);
       window.removeEventListener("click", handleClick);
-      chrome.storage.onChanged.removeListener(handleStorageChange);
     };
   }, []);
-
-  useEffect(() => {
-    if (selectedText && anchorEl) {
-      sendMessage(selectedText, anchorEl);
-    }
-  }, [selectedText, anchorEl, isExtensionEnabled]);
 
   return (
     <React.StrictMode>
@@ -93,7 +76,7 @@ export const ContentScript = () => {
         <HighlightTooltip
           selectedText={selectedText}
           anchorEl={anchorEl}
-          isExtensionEnabled={isExtensionEnabled}
+          isExtensionEnabled={isEnabled}
         />
       )}
     </React.StrictMode>
