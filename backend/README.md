@@ -42,12 +42,10 @@ touch .env
 
 ```
 OPENAI_API_KEY=<your-openai-api-key>
-MONGODB_URI=<your-mongodb-uri>
 ```
 
 Replace `<your-openai-api-key>` with your actual OpenAI API key.
 
-Replace `<your-mongodb-uri>` with the URI of your MongoDB database.
 
 ### Running the Server
 
